@@ -16,9 +16,9 @@
 ###### example
 #
 # cfg = Configuration()
-# if task == 'label':
+# if cfg.task == 'label':
 #   print(cfg.label_vFn, cfg.label_vAnnFile)
-# elif task == 'crop':
+# elif cfg.task == 'crop':
 #   ...
 #####################################################################
 
@@ -28,9 +28,9 @@ class Configuration:
         fp_cfg = open(self.__filePath, 'r')
         self.__strConfig = fp_cfg.readlines()
         self.task = ''
-        self.initialize()
+        self.__initialize()
 
-    def initialize(self):
+    def __initialize(self):
         for line in self.__strConfig:
             line = line.strip()
             if line.find('gl_task') >= 0:
@@ -56,6 +56,5 @@ class Configuration:
                 pass
             if self.task == 'testROC' >= 0:
                 pass
-
 
 

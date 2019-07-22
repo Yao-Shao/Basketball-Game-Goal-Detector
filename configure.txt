@@ -1,6 +1,6 @@
 ##### task to be executed, should be one of the following:
 ##### label / crop / train / crossvalidation / testROC
-gl_task = crop
+gl_task = label
 ##############################################################
 ##### for label
 label_fn_video = ../dataset/videos/DSC_0787.mov
