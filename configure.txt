@@ -9,8 +9,8 @@ label_fn_annotation = ../dataset/annotation/DSC_0787.txt
 ##### for crop
 crop_fn_video = ../dataset/videos/DSC_0787.mov
 crop_fn_annotation = ../dataset/annotation/DSC_0787.txt
-crop_dir_pos = ../dataset/posSamples/
-crop_dir_neg = ../dataset/negSamples/
+crop_dir_pos = ../dataset/posSamples/DSC_0787.npy
+crop_dir_neg = ../dataset/negSamples/DSC_0787.npy
 crop_size = 40, 40
 ##############################################################
 ##### for training or cross-validation 
