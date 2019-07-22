@@ -16,9 +16,10 @@
 ###### example
 #
 # cfg = Configuration()
-# print(cfg.label_vFn, cfg.label_vAnnFile, cfg.crop_vFn, \
-#      cfg.crop_vAnnFile, cfg.outDirPos, cfg.outDirNeg, cfg.cropSize)
-#
+# if task == 'label':
+#   print(cfg.label_vFn, cfg.label_vAnnFile)
+# elif task == 'crop':
+#   ...
 #####################################################################
 
 class Configuration:
@@ -26,15 +27,7 @@ class Configuration:
         self.__filePath = "../configure.txt"
         fp_cfg = open(self.__filePath, 'r')
         self.__strConfig = fp_cfg.readlines()
-
         self.task = ''
-        self.label_vFn = ''
-        self.label_vAnnFile = ''
-        self.crop_vFn = ''
-        self.crop_vAnnFile = ''
-        self.outDirPos = ''
-        self.outDirNeg = ''
-        self.cropSize = []
         self.initialize()
 
     def initialize(self):
@@ -63,8 +56,6 @@ class Configuration:
                 pass
             if self.task == 'testROC' >= 0:
                 pass
-
-
 
 
 
