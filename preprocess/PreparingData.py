@@ -166,7 +166,10 @@ class MakeDataSet(object):
 
 
 if __name__ == '__main__':
-    demo = PreparingData('1.avi')
+    demo = PreparingData('../dataset/videos/1.mov')
     demo.pre_process()
     demo.store_reference()
+    demo = MakeDataSet('../dataset/videos/1.mov')
+    demo.make_data_set()
+    demo.output_data_set("neg", "pos")
 
