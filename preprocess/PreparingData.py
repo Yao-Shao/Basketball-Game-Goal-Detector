@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from .config import *
 
 
 class PreparingData(object):
@@ -16,6 +17,7 @@ class PreparingData(object):
         self.rect_height = ''
         self.win_name = 'frame'
         self.rect_flag = False
+        self.config = Configuration()
 
     def broadcast(self, num):
         i = num
@@ -97,6 +99,7 @@ class MakeDataSet(object):
         self.label = False
         self.negative = []
         self.positive = []
+        self.config = Configuration()
 
     def cutting(self):
         cutting = self.frame[self.hoopPos[1]:self.hoopPos[3], self.hoopPos[0]:self.hoopPos[2]]
@@ -163,6 +166,7 @@ class MakeDataSet(object):
 
 
 if __name__ == '__main__':
-    demo = MakeDataSet("D:\\1.avi")
-    demo.make_data_set()
+    demo = PreparingData('1.avi')
+    demo.pre_process()
+    demo.store_reference()
 
