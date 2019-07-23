@@ -221,10 +221,10 @@ if __name__ == '__main__':
     video_index = input('video index: ')
     op = input('operation: ')
     if op == '0':
-        demo = PreparingData(0)
+        demo = PreparingData(video_index)
         demo.pre_process()
         demo.store_reference()
     else:
-        demo = MakeDataSet(0)
+        demo = MakeDataSet(video_index)
         demo.make_data_set()
-        demo.output_data_set(0)
+        demo.output_data_set(video_index)
