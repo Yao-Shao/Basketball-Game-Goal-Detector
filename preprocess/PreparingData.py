@@ -1,12 +1,13 @@
 import cv2
 import numpy as np
-from preprocess.config import *
+from config import *
 
 
 class PreparingData(object):
     def __init__(self, fn_video_index):
         self.config = Configuration()
         self.fn_video = self.config.crop_vFn[fn_video_index]
+        print(self.fn_video)
         self.cap = cv2.VideoCapture(self.fn_video)
         if not self.cap.isOpened():
             print('cannot open video file!')
@@ -81,7 +82,6 @@ class PreparingData(object):
         print(self.rect_width, file=out)
         print(self.rect_height, file=out)
         out.close()
-
 
 class MakeDataSet(object):
     def __init__(self, fn_video_index):
@@ -219,11 +219,12 @@ class MakeDataSet(object):
 
 if __name__ == '__main__':
     op = input('operation: ')
+    index = 0
     if op == '0':
-        demo = PreparingData(0)
+        demo = PreparingData(index)
         demo.pre_process()
         demo.store_reference()
     else:
-        demo = MakeDataSet(0)
+        demo = MakeDataSet(index)
         demo.make_data_set()
-        demo.output_data_set(0)
+        demo.output_data_set(index)
