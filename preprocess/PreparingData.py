@@ -103,7 +103,7 @@ class MakeDataSet(object):
         self.negative = []
         self.positive = []
         self.positive_index = ''
-        self.display_refer = 5
+        self.display_refer = 10
 
     def cutting(self, is_display):
         cutting = self.frame[self.hoopPos[1]:self.hoopPos[3], self.hoopPos[0]:self.hoopPos[2]]
@@ -161,7 +161,6 @@ class MakeDataSet(object):
 
             if self.label & (self.positive_index[pos - 1] == 0):
                 self.positive_index[pos - 1] = 1
-                self.positive.append(cutting)
 
             # print(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
             print('delay = ', delay, ' frame pos = ', pos - 1, ' label = ', self.positive_index[pos - 1])
@@ -188,10 +187,14 @@ class MakeDataSet(object):
             elif key == ord('c'):
                 self.label = not self.label
             elif key == ord('i'):
-                next_pos = int(input('change position: '))
+                tmp = input('change position: ')
+                if not tmp.isnumeric():
+                    continue
+                next_pos = int(tmp)
                 if(next_pos < pos):
                     for i in range(next_pos, pos):
                         self.positive_index[i] = 0
+
                     self.label = False
                 self.cap.set(cv2.CAP_PROP_POS_FRAMES, next_pos)
                 cv2.setTrackbarPos('time', self.win_name, next_pos)
@@ -205,6 +208,9 @@ class MakeDataSet(object):
             if self.positive_index[index] == 0:
                 cutting = self.cutting(False)
                 self.negative.append(cutting)
+            if self.positive_index[index] == 1:
+                cutting = self.cutting(False)
+                self.positive.append(cutting)
             index = index + 1
 
     def output_data_set(self, fn_index):
