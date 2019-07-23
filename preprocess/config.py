@@ -35,7 +35,7 @@ class Configuration:
             line = line.strip()
             if line.find('gl_task') >= 0:
                 self.task = line.split('=')[1].strip()
-            if self.task == 'label':
+            if self.task == 'crop':
                 if line.find('crop_fn_video') >= 0:
                     tmp = line.split('=')[1].strip().split(',')
                     self.crop_vFn = [name.strip() for name in tmp]
