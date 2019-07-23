@@ -6,8 +6,8 @@ from config import *
 class PreparingData(object):
     def __init__(self, fn_video_index):
         self.config = Configuration()
+        # print(self.config.crop_vFn)
         self.fn_video = self.config.crop_vFn[fn_video_index]
-        print(self.fn_video)
         self.cap = cv2.VideoCapture(self.fn_video)
         if not self.cap.isOpened():
             print('cannot open video file!')
@@ -83,6 +83,7 @@ class PreparingData(object):
         print(self.rect_height, file=out)
         out.close()
 
+
 class MakeDataSet(object):
     def __init__(self, fn_video_index):
         self.config = Configuration()
@@ -102,7 +103,7 @@ class MakeDataSet(object):
         self.negative = []
         self.positive = []
         self.positive_index = ''
-        self.display_refer = 10
+        self.display_refer = 5
 
     def cutting(self, is_display):
         cutting = self.frame[self.hoopPos[1]:self.hoopPos[3], self.hoopPos[0]:self.hoopPos[2]]
@@ -113,8 +114,10 @@ class MakeDataSet(object):
             cv2.imshow('cutting', cutting_display)
         return cutting
 
-    def write_log(self):
-        pass
+    def write_log(self, fn_video_index):
+        file_ann = open(self.config.crop_vAnnFile[fn_video_index], 'w')
+        for i in range(len(self.positive_index)):
+            print(i, self.positive_index[i], file=file_ann)
 
     def on_change(self, emp):
         pass
@@ -186,6 +189,10 @@ class MakeDataSet(object):
                 self.label = not self.label
             elif key == ord('i'):
                 next_pos = int(input('change position: '))
+                if(next_pos < pos):
+                    for i in range(next_pos, pos):
+                        self.positive_index[i] = 0
+                    self.label = False
                 self.cap.set(cv2.CAP_PROP_POS_FRAMES, next_pos)
                 cv2.setTrackbarPos('time', self.win_name, next_pos)
 
@@ -209,6 +216,8 @@ class MakeDataSet(object):
         # print(type(self.negative[0]), self.negative[0].shape)
         np.save(self.config.outDirNeg[fn_index][:-4], self.negative)
         np.save(self.config.outDirPos[fn_index][:-4], self.positive)
+        print(len(self.positive))
+        print(len(self.negative))
 
         # test save result
         # test = np.load(fn_pos+'.npy')
@@ -218,13 +227,14 @@ class MakeDataSet(object):
 
 
 if __name__ == '__main__':
+    video_index = int(input('video index: '))
     op = input('operation: ')
-    index = 0
     if op == '0':
-        demo = PreparingData(index)
+        demo = PreparingData(video_index)
         demo.pre_process()
         demo.store_reference()
     else:
-        demo = MakeDataSet(index)
+        demo = MakeDataSet(video_index)
         demo.make_data_set()
-        demo.output_data_set(index)
+        demo.output_data_set(video_index)
+        demo.write_log(video_index)
