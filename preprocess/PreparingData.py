@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from .config import *
+from config import *
 
 
 class PreparingData(object):
