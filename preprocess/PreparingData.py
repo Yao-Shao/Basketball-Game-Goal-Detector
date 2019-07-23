@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 
 class PreparingData(object):
@@ -55,6 +56,7 @@ class PreparingData(object):
             if ret == ord('q'):
                     break
             elif ret == ord('y'):
+                    print('y')
                     break
             elif ret == ord('n'):
                 self.frame = tmp.copy()
@@ -79,7 +81,88 @@ class PreparingData(object):
         out.close()
 
 
+class MakeDataSet(object):
+    def __init__(self, fn_video):
+        fn_refer = 'PreparingData.ref'
+        file_refer = open(fn_refer, 'r')
+        self.hoopPos = []
+        self.hoopPos.append(int(file_refer.readline()))
+        self.hoopPos.append(int(file_refer.readline()))
+        self.hoopPos.append(self.hoopPos[0] + int(file_refer.readline()))
+        self.hoopPos.append(self.hoopPos[1] + int(file_refer.readline()))
+        print(self.hoopPos)
+        self.cap = cv2.VideoCapture(fn_video)
+        self.frame = ''
+        self.win_name = 'label windows'
+        self.label = False
+        self.negative = []
+        self.positive = []
+
+    def cutting(self):
+        cutting = self.frame[self.hoopPos[1]:self.hoopPos[3], self.hoopPos[0]:self.hoopPos[2]]
+        cutting = cv2.cvtColor(cutting, cv2.COLOR_BGR2GRAY)
+        if self.label:
+            self.positive.append(cutting)
+        else:
+            self.negative.append(cutting)
+        cutting_display = cv2.resize(cutting, dsize=None, fx=2, fy=2)
+        cv2.imshow('cutting', cutting_display)
+
+    def write_log(self):
+        pass
+
+    def make_data_set(self):
+        delay = 20
+        count = 0
+        while True:
+            count = count + 1
+            ret, self.frame = self.cap.read()
+            print('delay = ', delay, ' frame count = ', count, ' label = ', self.label)
+            if not ret:
+                break
+
+            self.cutting()
+
+            cv2.rectangle(self.frame, (self.hoopPos[2], self.hoopPos[3]),
+                          (self.hoopPos[0], self.hoopPos[1]), (255, 0, 0), 2)
+            cv2.imshow(self.win_name, self.frame)
+
+            key = cv2.waitKey(delay) & 0xFF
+
+            if key == ord('q'):
+                break
+            elif key == ord('u'):
+                if delay == 0 or delay > 20:
+                    delay = 20
+                else:
+                    delay = delay - 5
+                    if delay <= 0:
+                        delay = 1
+            elif key == ord('d'):
+                delay = 100
+            elif key == ord('s'):
+                delay = 0
+            elif key == ord('c'):
+                self.label = not self.label
+
+    def output_data_set(self, fn_neg, fn_pos):
+        # test item in list
+        # for item in self.negative:
+        #    cv2.imshow('test', item)
+        #    cv2.waitKey(10)
+
+        print(type(self.negative[0]), self.negative[0].shape)
+        np.save(fn_neg, self.negative)
+        np.save(fn_pos, self.positive)
+
+        # test save result
+        test = np.load(fn_neg+'.npy')
+        for item in test:
+            cv2.imshow('test', item)
+            cv2.waitKey(20)
+
+
 if __name__ == '__main__':
-    demo = PreparingData('D:\\1.avi')
-    demo.pre_process()
-    demo.store_reference()
+    demo = MakeDataSet("D:\\1.avi")
+    demo.make_data_set()
+
