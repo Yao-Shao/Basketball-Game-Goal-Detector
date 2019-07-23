@@ -218,7 +218,7 @@ class MakeDataSet(object):
 
 
 if __name__ == '__main__':
-    video_index = input('video index: ')
+    video_index = int(input('video index: '))
     op = input('operation: ')
     if op == '0':
         demo = PreparingData(video_index)
