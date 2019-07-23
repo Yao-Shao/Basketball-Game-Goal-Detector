@@ -4,9 +4,10 @@ from preprocess.config import *
 
 
 class PreparingData(object):
-    def __init__(self, fn_video):
-        self.fn_video = fn_video
-        self.cap = cv2.VideoCapture(fn_video)
+    def __init__(self, fn_video_index):
+        self.config = Configuration()
+        self.fn_video = self.config.crop_vFn[fn_video_index]
+        self.cap = cv2.VideoCapture(self.fn_video)
         if not self.cap.isOpened():
             print('cannot open video file!')
             exit(-1)
@@ -17,7 +18,6 @@ class PreparingData(object):
         self.rect_height = ''
         self.win_name = 'frame'
         self.rect_flag = False
-        self.config = Configuration()
 
     def broadcast(self, num):
         i = num
@@ -84,7 +84,8 @@ class PreparingData(object):
 
 
 class MakeDataSet(object):
-    def __init__(self, fn_video):
+    def __init__(self, fn_video_index):
+        self.config = Configuration()
         fn_refer = 'PreparingData.ref'
         file_refer = open(fn_refer, 'r')
         self.hoopPos = []
@@ -93,15 +94,15 @@ class MakeDataSet(object):
         self.hoopPos.append(self.hoopPos[0] + int(file_refer.readline()))
         self.hoopPos.append(self.hoopPos[1] + int(file_refer.readline()))
         print(self.hoopPos)
-        self.fn_video = fn_video
-        self.cap = cv2.VideoCapture(fn_video)
+        self.fn_video = self.config.crop_vFn[fn_video_index]
+        self.cap = cv2.VideoCapture(self.fn_video)
         self.frame = ''
         self.win_name = 'label windows'
         self.label = False
         self.negative = []
         self.positive = []
         self.positive_index = ''
-        self.display_refer = 1
+        self.display_refer = 10
 
     def cutting(self, is_display):
         cutting = self.frame[self.hoopPos[1]:self.hoopPos[3], self.hoopPos[0]:self.hoopPos[2]]
@@ -206,8 +207,8 @@ class MakeDataSet(object):
         #    cv2.waitKey(10)
 
         # print(type(self.negative[0]), self.negative[0].shape)
-        np.save(fn_neg, self.negative)
-        np.save(fn_pos, self.positive)
+        np.save(self.config.outDirNeg[:-4], self.negative)
+        np.save(self.config.outDirPos[:-4], self.positive)
 
         # test save result
         # test = np.load(fn_pos+'.npy')
@@ -219,10 +220,10 @@ class MakeDataSet(object):
 if __name__ == '__main__':
     op = input('operation: ')
     if op == '0':
-        demo = PreparingData('D:\\1.avi')
+        demo = PreparingData(0)
         demo.pre_process()
         demo.store_reference()
     else:
-        demo = MakeDataSet('D:\\1.avi')
+        demo = MakeDataSet(0)
         demo.make_data_set()
         demo.output_data_set('test_neg', 'test_pos')
