@@ -2,3 +2,5 @@
 
 videos/
 .idea/
+*.npy
+*.ref
