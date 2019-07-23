@@ -200,15 +200,15 @@ class MakeDataSet(object):
                 self.negative.append(cutting)
             index = index + 1
 
-    def output_data_set(self, fn_neg, fn_pos):
+    def output_data_set(self, fn_index):
         # test item in list
         # for item in self.negative:
         #    cv2.imshow('test', item)
         #    cv2.waitKey(10)
 
         # print(type(self.negative[0]), self.negative[0].shape)
-        np.save(self.config.outDirNeg[:-4], self.negative)
-        np.save(self.config.outDirPos[:-4], self.positive)
+        np.save(self.config.outDirNeg[fn_index][:-4], self.negative)
+        np.save(self.config.outDirPos[fn_index][:-4], self.positive)
 
         # test save result
         # test = np.load(fn_pos+'.npy')
@@ -226,4 +226,4 @@ if __name__ == '__main__':
     else:
         demo = MakeDataSet(0)
         demo.make_data_set()
-        demo.output_data_set('test_neg', 'test_pos')
+        demo.output_data_set(0)
