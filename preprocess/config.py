@@ -57,7 +57,7 @@ class Configuration:
                     self.outDirNeg = [name.strip() for name in tmp]
                 if line.find('crop_size') >= 0:
                     size = line.split('=')[1].strip()
-                    self.cropSize = [int(size.split(',')[0]), int(size.split(',')[1])]
+                    self.cropSize = [int(i) for i in size]
             if self.task == 'train' >= 0:
                 pass
             if self.task == 'testROC' >= 0:
