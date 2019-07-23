@@ -217,7 +217,6 @@ class MakeDataSet(object):
         #    cv2.waitKey(20)
 
 
-
 if __name__ == '__main__':
     op = input('operation: ')
     if op == '0':
