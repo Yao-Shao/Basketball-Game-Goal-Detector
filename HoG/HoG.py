@@ -8,4 +8,3 @@ for item in fp:
 
 class HoG:
     def __init__(self):
-        

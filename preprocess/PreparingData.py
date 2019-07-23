@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from config import *
+from preprocess.config import *
 
 
 class PreparingData(object):
@@ -93,38 +93,74 @@ class MakeDataSet(object):
         self.hoopPos.append(self.hoopPos[0] + int(file_refer.readline()))
         self.hoopPos.append(self.hoopPos[1] + int(file_refer.readline()))
         print(self.hoopPos)
+        self.fn_video = fn_video
         self.cap = cv2.VideoCapture(fn_video)
         self.frame = ''
         self.win_name = 'label windows'
         self.label = False
         self.negative = []
         self.positive = []
-        self.config = Configuration()
+        self.positive_index = ''
+        self.display_refer = 1
 
-    def cutting(self):
+    def cutting(self, is_display):
         cutting = self.frame[self.hoopPos[1]:self.hoopPos[3], self.hoopPos[0]:self.hoopPos[2]]
         cutting = cv2.cvtColor(cutting, cv2.COLOR_BGR2GRAY)
-        if self.label:
-            self.positive.append(cutting)
-        else:
-            self.negative.append(cutting)
-        cutting_display = cv2.resize(cutting, dsize=None, fx=2, fy=2)
-        cv2.imshow('cutting', cutting_display)
+
+        if is_display:
+            cutting_display = cv2.resize(cutting, dsize=None, fx=self.display_refer, fy=self.display_refer)
+            cv2.imshow('cutting', cutting_display)
+        return cutting
 
     def write_log(self):
         pass
 
+    def on_change(self, emp):
+        pass
+
     def make_data_set(self):
-        delay = 20
-        count = 0
+        cv2.namedWindow(self.win_name)
+        count = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        print(count)
+        loop_flag = 0
+        pos = 0
+        cv2.createTrackbar('time', self.win_name, 0, count, self.on_change)
+        delay = 0
+
+        self.positive_index = np.zeros(count, dtype=np.bool)
+
         while True:
-            count = count + 1
+            '''
+            if loop_flag == pos:
+                loop_flag = loop_flag + 1
+                cv2.setTrackbarPos('time', self.win_name, loop_flag)
+            else:
+                pos = cv2.getTrackbarPos('time', self.win_name)
+                loop_flag = pos
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, pos)
+            '''
+            pos = cv2.getTrackbarPos('time', self.win_name)
+            if pos != loop_flag:
+                loop_flag = pos
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, pos)
             ret, self.frame = self.cap.read()
-            print('delay = ', delay, ' frame count = ', count, ' label = ', self.label)
             if not ret:
                 break
+            # next_loop_flag = loop_flag + 1
+            # next_pos = pos + 1
 
-            self.cutting()
+            loop_flag = loop_flag + 1
+            pos = pos + 1
+            cv2.setTrackbarPos('time', self.win_name, pos)
+
+            cutting = self.cutting(True)
+
+            if self.label & (self.positive_index[pos - 1] == 0):
+                self.positive_index[pos - 1] = 1
+                self.positive.append(cutting)
+
+            # print(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
+            print('delay = ', delay, ' frame pos = ', pos - 1, ' label = ', self.positive_index[pos - 1])
 
             cv2.rectangle(self.frame, (self.hoopPos[2], self.hoopPos[3]),
                           (self.hoopPos[0], self.hoopPos[1]), (255, 0, 0), 2)
@@ -132,7 +168,7 @@ class MakeDataSet(object):
 
             key = cv2.waitKey(delay) & 0xFF
 
-            if key == ord('q'):
+            if (key == ord('q')) | (pos == count):
                 break
             elif key == ord('u'):
                 if delay == 0 or delay > 20:
@@ -142,11 +178,26 @@ class MakeDataSet(object):
                     if delay <= 0:
                         delay = 1
             elif key == ord('d'):
-                delay = 100
+                delay = 1000
             elif key == ord('s'):
                 delay = 0
             elif key == ord('c'):
                 self.label = not self.label
+            elif key == ord('i'):
+                next_pos = int(input('change position: '))
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, next_pos)
+                cv2.setTrackbarPos('time', self.win_name, next_pos)
+
+        self.cap = cv2.VideoCapture(self.fn_video)
+        index = 0
+        while True:
+            ret, self.frame = self.cap.read()
+            if not ret:
+                break
+            if self.positive_index[index] == 0:
+                cutting = self.cutting(False)
+                self.negative.append(cutting)
+            index = index + 1
 
     def output_data_set(self, fn_neg, fn_pos):
         # test item in list
@@ -154,22 +205,25 @@ class MakeDataSet(object):
         #    cv2.imshow('test', item)
         #    cv2.waitKey(10)
 
-        print(type(self.negative[0]), self.negative[0].shape)
+        # print(type(self.negative[0]), self.negative[0].shape)
         np.save(fn_neg, self.negative)
         np.save(fn_pos, self.positive)
 
         # test save result
-        test = np.load(fn_neg+'.npy')
-        for item in test:
-            cv2.imshow('test', item)
-            cv2.waitKey(20)
+        # test = np.load(fn_pos+'.npy')
+        # for item in test:
+        #    cv2.imshow('test', item)
+        #    cv2.waitKey(20)
+
 
 
 if __name__ == '__main__':
-    demo = PreparingData('../dataset/videos/1.mov')
-    demo.pre_process()
-    demo.store_reference()
-    demo = MakeDataSet('../dataset/videos/1.mov')
-    demo.make_data_set()
-    demo.output_data_set("neg", "pos")
-
+    op = input('operation: ')
+    if op == '0':
+        demo = PreparingData('D:\\1.avi')
+        demo.pre_process()
+        demo.store_reference()
+    else:
+        demo = MakeDataSet('D:\\1.avi')
+        demo.make_data_set()
+        demo.output_data_set('test_neg', 'test_pos')

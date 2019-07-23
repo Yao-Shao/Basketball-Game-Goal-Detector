@@ -36,13 +36,6 @@ class Configuration:
             if line.find('gl_task') >= 0:
                 self.task = line.split('=')[1].strip()
             if self.task == 'label':
-                if line.find('label_fn_video') >= 0:
-                    tmp = line.split('=')[1].strip().split(',')
-                    self.label_vFn = [name.strip() for name in tmp]
-                if line.find('label_fn_annotation') >= 0:
-                    tmp = line.split('=')[1].strip().split(',')
-                    self.label_vAnnFile = [name.strip() for name in tmp]
-            if self.task == 'crop':
                 if line.find('crop_fn_video') >= 0:
                     tmp = line.split('=')[1].strip().split(',')
                     self.crop_vFn = [name.strip() for name in tmp]
