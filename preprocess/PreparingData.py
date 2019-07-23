@@ -6,6 +6,7 @@ from preprocess.config import *
 class PreparingData(object):
     def __init__(self, fn_video_index):
         self.config = Configuration()
+        # print(self.config.crop_vFn)
         self.fn_video = self.config.crop_vFn[fn_video_index]
         self.cap = cv2.VideoCapture(self.fn_video)
         if not self.cap.isOpened():
@@ -113,8 +114,10 @@ class MakeDataSet(object):
             cv2.imshow('cutting', cutting_display)
         return cutting
 
-    def write_log(self):
-        pass
+    def write_log(self, fn_video_index):
+        file_ann = open(self.config.crop_vAnnFile[fn_video_index], 'w')
+        for i in range(len(self.positive_index)):
+            print(i, self.positive_index[i], file=file_ann)
 
     def on_change(self, emp):
         pass
@@ -209,6 +212,8 @@ class MakeDataSet(object):
         # print(type(self.negative[0]), self.negative[0].shape)
         np.save(self.config.outDirNeg[fn_index][:-4], self.negative)
         np.save(self.config.outDirPos[fn_index][:-4], self.positive)
+        print(len(self.positive))
+        print(len(self.negative))
 
         # test save result
         # test = np.load(fn_pos+'.npy')
@@ -228,3 +233,4 @@ if __name__ == '__main__':
         demo = MakeDataSet(video_index)
         demo.make_data_set()
         demo.output_data_set(video_index)
+        demo.write_log(video_index)
