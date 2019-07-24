@@ -167,7 +167,7 @@ class HoG(object):
                         block_vector.append(self.cells[index_x + i, index_y + j])
                 block_vector = np.array(block_vector)
                 block_vector = block_vector.flatten()
-                block_vector = block_vector / block_vector.sum()
+                block_vector = block_vector / (block_vector.sum() + 0.000000000001)
                 img_vector.append(block_vector)
                 index_y = index_y + step_y
             index_y = 0
@@ -206,7 +206,7 @@ class HoG(object):
                 print('')
         length = len(self.positive)
         if length % 200 != 0:
-            print('Complete: ', length)
+            print('\nComplete: ', length)
 
         self.hog_negative = []
         index = 0
@@ -216,12 +216,12 @@ class HoG(object):
             self.hog_negative.append(img_vector)
             index = index + 1
             if index % 200 == 0:
-                print(index, end='\t')
+                print(index, end=' ')
             if index % 2000 == 0:
                 print('')
         length = len(self.negative)
         if length % 200 != 0:
-            print('Complete: ', length)
+            print('\nComplete: ', length)
         self.save()
 
 
