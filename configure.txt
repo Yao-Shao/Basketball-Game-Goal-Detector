@@ -1,6 +1,6 @@
 ##### task to be executed, should be one of the following:
 ##### label / crop / train / crossvalidation / testROC
-gl_task = crop
+gl_task = train
 ##############################################################
 ##### for crop
 crop_fn_video = ../dataset/videos/1.MOV, ../dataset/videos/2.avi, ../dataset/videos/3.mov, ../dataset/videos/4.mov
@@ -14,6 +14,13 @@ crop_size = 40, 40
 #### algorithm: 1 = naive classifier, 2 = SVM, 3 = CNN
 #### train_fn_pos = ../dataset/posSamples/DSC_0790.npy; 
 #### train_fn_annotation_pos =  ../dataset/annotations/DSC_0790.txt; 
+#### train_hog_pos = ../dataset/HoG/train/pos_0.npy 
+# train_hog_neg = ../dataset/HoG/train/neg_0.npy 
+#### train_thresholdMin = 1000
+#### train_thresholdMax = 2500
+#### train_thresholdStep = 100
 ##############################################################
 ##### for testROC
-#### testROC_dir = ../dataset/ROC/
+#### classify_samples_pos = ../dataset/HoG/test/pos_0.npy
+#### classify_samples_neg = ../dataset/HoG/test/neg_0.npy
+#### classify_result = ../dataset/result/result.txt
