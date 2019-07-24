@@ -47,7 +47,7 @@ class HoG(object):
         print('negative set: ', len(self.negative), self.negative[0].shape)
         print('Complete')
 
-    def hog_test(self):
+    def hog_test(self, img):
         win_size = (128, 128)
         block_size = (16, 16)
         block_stride = (8, 8)
@@ -62,6 +62,13 @@ class HoG(object):
         hog = cv2.HOGDescriptor(win_size, block_size, block_stride, cell_size, nbins, deriv_aperture, win_sigma,
                                 histogram_norm_type, l2_hys_threshold, gamma_correction, nlevels)
 
+        descriptor = hog.compute(img)
+        if descriptor is None:
+            descriptor = []
+        else:
+            descriptor = descriptor.ravel()
+
+        '''
         self.hog_positive = []
         for img in self.positive:
             # print(img.shape)
@@ -89,6 +96,8 @@ class HoG(object):
 
         np.save('hog_pos_'+str(self.fn_index), self.positive)
         np.save('hog_neg_'+str(self.fn_index), self.negative)
+        '''
+        return descriptor
 
     def calc_gradient(self, img):
         # img = self.positive[0]
@@ -204,24 +213,24 @@ class HoG(object):
                 print(index, end=' ')
             if index % 2000 == 0:
                 print('')
-        length = len(self.positive)
-        if length % 200 != 0:
-            print('\nComplete: ', length)
-
+        self.hog_positive = np.array(self.hog_positive)
+        if self.hog_positive.shape[0] % 200 != 0:
+            print('\nComplete: ', self.hog_positive.shape)
         self.hog_negative = []
         index = 0
         print('HoG on negative data set...')
         for img in self.negative:
             img_vector = self.calc_hog(img)
+            # print(img_vector.shape)
             self.hog_negative.append(img_vector)
             index = index + 1
             if index % 200 == 0:
                 print(index, end=' ')
             if index % 2000 == 0:
                 print('')
-        length = len(self.negative)
-        if length % 200 != 0:
-            print('\nComplete: ', length)
+        self.hog_negative = np.array(self.hog_negative)
+        if self.hog_negative.shape[0] % 200 != 0:
+            print('\nComplete: ', self.hog_negative.shape)
         self.save()
 
 
@@ -229,4 +238,4 @@ if __name__ == '__main__':
     video_index = int(input('video_index: '))
     demo = HoG(video_index)
     # demo.hog_test()
-    demo.hog_on_data_set()
+    demo.hog_test()
