@@ -24,7 +24,7 @@
 
 class Configuration:
     def __init__(self):
-        self.__filePath = "../configure.txt"
+        self.__filePath = "../configure.ini"
         fp_cfg = open(self.__filePath, 'r')
         self.__strConfig = fp_cfg.readlines()
         self.task = ''
@@ -64,6 +64,12 @@ class Configuration:
                 if line.find("train_hog_neg") >= 0:
                     tmp = line.split('=')[1].strip().split(',')
                     self.trainHogNeg = [path.strip() for path in tmp]
+                if line.find("train_samples_pos") >= 0:
+                    tmp = line.split('=')[1].strip().split(',')
+                    self.trainSamplesPos = [path.strip() for path in tmp]
+                if line.find("train_samples_neg") >= 0:
+                    tmp = line.split('=')[1].strip().split(',')
+                    self.trainSamplesNeg = [path.strip() for path in tmp]
                 if line.find("train_thresholdMin") >= 0:
                     self.thresholdMin = float(line.split('=')[1].strip())
                 if line.find("train_thresholdMax") >= 0:
@@ -73,7 +79,7 @@ class Configuration:
             # if self.task == 'testROC' >= 0:
                 if line.find('classify_samples_pos') >= 0:
                     tmp = line.split('=')[1].strip().split(',')
-                    self.testHogPos = [path.strip() for path in tmp]
+                    self.testSamplesPos = [path.strip() for path in tmp]
                 if line.find('classify_samples_neg') >= 0:
                     tmp = line.split('=')[1].strip().split(',')
-                    self.testHogNeg = [path.strip() for path in tmp]
+                    self.testSamplesNeg = [path.strip() for path in tmp]
