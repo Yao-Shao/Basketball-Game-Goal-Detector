@@ -89,18 +89,16 @@ class TestROC:
             self.__rec.append(self.recall)
             self.__far.append(self.falseAlarmRate)
             self.__classifier.setThreshold(self.__classifier.getThreshold() + config.thresholdStep)
-            print(self.__rec, self.__far)
         # plot ROC graph
+        print(self.__far)
+        print(self.__rec)
         plt.plot(self.__far, self.__rec)
         plt.title('ROC Curve')
         plt.xlabel('False Alarm Rate')
         plt.ylabel('Missed Positive Number')
-        plt.axis([0,100,0,100])
+        plt.axis([0,0.5,0,25])
         plt.grid(True)
         plt.show()
-
-
-
 
     def printEval(self):
         print("True Positive = {:}".format(self.__truePos))
@@ -122,13 +120,9 @@ class TestROC:
         self.falseAlarmRate = self.__falsePos / (self.__falsePos + self.__trueNeg) * 100
 
 
-
-config = config.Configuration()
-
 if __name__ == '__main__':
-    if config.task == 'train':
-        index = 0
-
+    cfg = config.Configuration()
+    if cfg.task == 'train':
         ########## train the classifier ############
         ###### pos as center
 
@@ -136,7 +130,7 @@ if __name__ == '__main__':
         # classifier = Classifier(trainPos)
 
         ###### neg as center
-        classifier = Classifier(config.trainHogNeg)
+        classifier = Classifier(cfg.trainHogNeg)
 
         # test
         myTest = TestROC(classifier)

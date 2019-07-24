@@ -12,12 +12,12 @@ crop_size = 40, 40
 ##### for training or cross-validation 
 #### feature_type: 1 = one frame HoG, 2 = two frame HoG, 3 = three frame HoG
 #### algorithm: 1 = naive classifier, 2 = SVM, 3 = CNN
-#### train_fn_pos = ../dataset/posSamples/DSC_0790.npy; 
-#### train_fn_annotation_pos =  ../dataset/annotations/DSC_0790.txt; 
+#### train_fn_pos = ../dataset/posSamples/1.npy, ../dataset/posSamples/2.npy, ../dataset/posSamples/3.npy, ../dataset/posSamples/4.npy
+#### train_fn_neg =  ../dataset/negSamples/1.npy, ../dataset/negSamples/2.npy, ../dataset/negSamples/3.npy, ../dataset/negSamples/4.npy
 #### train_hog_pos = ../dataset/HoG/train/pos_0.npy 
 # train_hog_neg = ../dataset/HoG/train/neg_0.npy 
-#### train_thresholdMin = 1000
-#### train_thresholdMax = 2500
+#### train_thresholdMin = 2000
+#### train_thresholdMax = 4000
 #### train_thresholdStep = 100
 ##############################################################
 ##### for testROC

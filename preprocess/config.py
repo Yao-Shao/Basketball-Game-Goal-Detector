@@ -52,6 +52,12 @@ class Configuration:
                     size = line.split('=')[1].strip().split(',')
                     self.cropSize = [int(i) for i in size]
             if self.task == 'train':
+                if line.find('train_fn_pos') >= 0:
+                    tmp = line.split('=')[1].strip().split(',')
+                    self.trainFnPos = [path.strip() for path in tmp]
+                if line.find('train_fn_neg') >= 0:
+                    tmp = line.split('=')[1].strip().split(',')
+                    self.trainFnNeg = [path.strip() for path in tmp]
                 if line.find("train_hog_pos") >= 0:
                     tmp = line.split('=')[1].strip().split(',')
                     self.trainHogPos = [path.strip() for path in tmp]
