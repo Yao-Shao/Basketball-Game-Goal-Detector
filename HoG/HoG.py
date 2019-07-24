@@ -27,8 +27,8 @@ class HoG(object):
 
     def load_data_set(self):
         print('Loading data set...')
-        fn_positive = self.config.outDirPos[self.fn_index]
-        fn_negative = self.config.outDirNeg[self.fn_index]
+        fn_positive = self.config.trainFnPos[self.fn_index]
+        fn_negative = self.config.trainFnNeg[self.fn_index]
         tmp_positive = np.load(fn_positive)
         # print(tmp_positive.shape)
         self.positive = []
@@ -184,33 +184,45 @@ class HoG(object):
         img_vector = self.block_normalize()
         return img_vector
 
+    def save(self):
+        out_positive = self.config.trainHogPos[self.fn_index]
+        out_negative = self.config.trainHogNeg[self.fn_index]
+        out_positive = out_positive[:-4]
+        out_negative = out_negative[:-4]
+        np.save(out_positive, self.hog_positive)
+        np.save(out_negative, self.hog_negative)
+
     def hog_on_data_set(self):
         self.hog_positive = []
         index = 0
+        print('HoG on positive data set...')
         for img in self.positive:
             img_vector = self.calc_hog(img)
             self.hog_positive.append(img_vector)
             index = index + 1
-            if index % 1000 == 0:
+            if index % 200 == 0:
                 print(index, end=' ')
+            if index % 2000 == 0:
+                print('')
         length = len(self.positive)
-        if length % 1000 != 0:
-            print(length)
+        if length % 200 != 0:
+            print('Complete: ', length)
 
         self.hog_negative = []
         index = 0
+        print('HoG on negative data set...')
         for img in self.negative:
             img_vector = self.calc_hog(img)
             self.hog_negative.append(img_vector)
             index = index + 1
-            if index % 100 == 0:
-                print(index, end=' ')
+            if index % 200 == 0:
+                print(index, end='\t')
+            if index % 2000 == 0:
+                print('')
         length = len(self.negative)
-        if length % 100 != 0:
-            print(length)
-
-    def save(self):
-        pass
+        if length % 200 != 0:
+            print('Complete: ', length)
+        self.save()
 
 
 if __name__ == '__main__':
