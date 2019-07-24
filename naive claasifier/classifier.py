@@ -50,36 +50,38 @@ class TestROC:
     def testPosCenter(self, filePath, label):
         for file in filePath:
             data = np.load(file)
+            # print("data num = {}".format(len(data)))
             if label == True:
                 for item in data:
                     # print(label, end=':')
                     if self.__classifier.classify(item) == True:
                         self.__truePos += 1
                     else:
-                        self.__falsePos += 1
+                        self.__falseNeg += 1
             else:
                 for item in data:
                     # print(label, end = ':')
                     if self.__classifier.classify(item) == True:
-                        self.__falseNeg += 1
+                        self.__falsePos += 1
                     else:
                         self.__trueNeg += 1
 
     def testNegCenter(self, filePath, label):
         for file in filePath:
             data = np.load(file)
+            # print("data num = {}".format(len(data)))
             if label == True:
                 for item in data:
                     # print(label, end=':')
                     if self.__classifier.classify(item) == True:
                         self.__falsePos += 1
                     else:
-                        self.__truePos += 1
+                        self.__trueNeg += 1
             else:
                 for item in data:
                     # print(label, end = ':')
                     if self.__classifier.classify(item) == True:
-                        self.__trueNeg += 1
+                        self.__truePos += 1
                     else:
                         self.__falseNeg += 1
 
@@ -89,10 +91,14 @@ class TestROC:
             self.testNegCenter(self.__testPos, True)
             self.testNegCenter(self.__testNeg, False)
             self.__calculate()
-            self.printEval()
+            # self.printEval()
             self.__rec.append(100 - self.recall)
             self.__far.append(self.falseAlarmRate)
             self.__classifier.setThreshold(self.__classifier.getThreshold() + self.__config.thresholdStep)
+            self.__truePos = 0
+            self.__falsePos = 0
+            self.__trueNeg = 0
+            self.__falseNeg = 0
         # plot ROC graph
         # print(self.__far)
         # print(self.__rec)
