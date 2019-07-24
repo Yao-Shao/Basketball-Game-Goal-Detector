@@ -6,13 +6,15 @@ from preprocess.config import *
 class HoG(object):
     def __init__(self, fn_index):
         # HoG reference
-        self.win_size = (64, 64)
+        self.win_size = (128, 128)
         self.block_size = (16, 16)
         self.block_stride = (8, 8)
         self.cell_size = (8, 8)
         self.n_bins = 9
         self.step = 180 / self.n_bins
         self.cell_dim = (int(self.win_size[0] / self.cell_size[0]), int(self.win_size[1] / self.cell_size[1]))
+        self.block_dim = (int((self.win_size[0] - self.block_size[0]) / self.block_stride[0] + 1),
+                          int((self.win_size[1] - self.block_size[1]) / self.block_stride[1] + 1))
         # other
         self.gx = []
         self.gy = []
@@ -32,14 +34,14 @@ class HoG(object):
         fn_positive = self.config.trainFnPos[self.fn_index]
         fn_negative = self.config.trainFnNeg[self.fn_index]
         tmp_positive = np.load(fn_positive)
-        # print(tmp_positive.shape)
+        print('origin positive data set: ', tmp_positive.shape)
         self.positive = []
         for item in tmp_positive:
             tmp = cv2.resize(item, self.win_size)
             self.positive.append(tmp)
 
         tmp_negative = np.load(fn_negative)
-        # print(tmp_negative.shape)
+        print('origin negative data set: ', tmp_positive.shape)
         self.negative = []
         for item in tmp_negative:
             tmp = cv2.resize(item, self.win_size)
@@ -123,8 +125,9 @@ class HoG(object):
 
     def calc_cell_histogram(self, cell, angle):
         # dispaly
-        cv2.imshow('mag', cv2.resize(self.mag, dsize=None, fx=10, fy=10))
-        cv2.imshow('cell', cv2.resize(cell, dsize=None, fx=20, fy=20))
+        # cv2.imshow('mag', cv2.resize(self.mag, dsize=None, fx=10, fy=10))
+        # cv2.imshow('cell', cv2.resize(cell, dsize=None, fx=20, fy=20))
+        # cv2.waitKey(0)
 
         histogram = np.zeros(self.n_bins, dtype=np.float64)
         angle = np.array(angle).flatten()
@@ -137,8 +140,8 @@ class HoG(object):
             part_up = cell[index] * dist_to_down / self.step
             histogram[up] = histogram[up] + part_up
             histogram[down] = histogram[down] + cell[index] - part_up
-        print(histogram)
-        cv2.waitKey(0)
+        # print(histogram)
+
         return histogram
 
     def calc_cells(self):
@@ -179,8 +182,7 @@ class HoG(object):
         # print('cell shape = ', self.cells.shape)
 
     def block_normalize(self):
-        block_dim = (int((self.win_size[0] - self.block_size[0])/self.block_stride[0] + 1),
-                     int((self.win_size[1] - self.block_size[1])/self.block_stride[1] + 1))
+
         # print('block dim = ', block_dim)
         step_x = int(self.block_stride[0] / self.cell_size[0])
         step_y = int(self.block_stride[1] / self.cell_size[1])
@@ -189,25 +191,29 @@ class HoG(object):
         index_x = 0
         index_y = 0
         img_vector = []
-        for x in range(block_dim[0]):
-            for y in range(block_dim[1]):
+        for x in range(self.block_dim[0]):
+            for y in range(self.block_dim[1]):
+                block_vector = self.cells[index_x:index_x+contain_x, index_y:index_y+contain_y]
+                """ get vector by for
                 block_vector = []
                 for i in range(contain_x):
                     for j in range(contain_y):
-                        block_vector.append(self.cells[index_x + i, index_y + j])
+                        block_vector.append(self.cells[index_x + i, index_y + j])      
+                """
                 block_vector = np.array(block_vector)
                 block_vector = block_vector.flatten()
                 normalize = np.sqrt(np.sum(block_vector ** 2))
-                block_vector = block_vector / normalize
+                block_vector = block_vector / (normalize + 1e-15)
                 img_vector.append(block_vector)
                 index_y = index_y + step_y
             index_y = 0
             index_x = index_x + step_x
         img_vector = np.array(img_vector)
         img_vector = img_vector.flatten()
-        return img_vector
+
         # self.hog_data_set.append(img_vector)
         # print('vector shape: ', img_vector.shape)
+        return img_vector
 
     def calc_hog(self, img):
         self.calc_gradient(img)
@@ -259,11 +265,4 @@ class HoG(object):
 if __name__ == '__main__':
     video_index = int(input('video_index: '))
     demo = HoG(video_index)
-    # compare
-    cv_hog = demo.hog_test(demo.positive[0])[0:9]
-    private_hog = demo.calc_hog(demo.positive[0])[0:9]
-    # private_hog = private_hog * (np.sum(cv_hog) / np.sum(private_hog))
-    print(cv_hog)
-    print(np.sum(cv_hog))
-    print(private_hog)
-    print(np.sum(private_hog))
+    demo.hog_on_data_set()
