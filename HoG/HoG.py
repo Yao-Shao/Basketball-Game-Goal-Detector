@@ -48,18 +48,13 @@ class HoG(object):
         print('Complete')
 
     def hog_test(self, img):
-        win_size = (128, 128)
-        block_size = (16, 16)
-        block_stride = (8, 8)
-        cell_size = (8, 8)
-        nbins = 9
         deriv_aperture = -1
         win_sigma = -1
         histogram_norm_type = 0
         l2_hys_threshold = 2.0000000000000001e-01
         gamma_correction = 0
         nlevels = 128
-        hog = cv2.HOGDescriptor(win_size, block_size, block_stride, cell_size, nbins, deriv_aperture, win_sigma,
+        hog = cv2.HOGDescriptor(self.win_size, self.block_size, self.block_stride, self.cell_size, self.n_bins, deriv_aperture, win_sigma,
                                 histogram_norm_type, l2_hys_threshold, gamma_correction, nlevels)
 
         descriptor = hog.compute(img)
@@ -237,5 +232,6 @@ class HoG(object):
 if __name__ == '__main__':
     video_index = int(input('video_index: '))
     demo = HoG(video_index)
-    # demo.hog_test()
-    demo.hog_test()
+    # compare
+    print(np.sum(demo.hog_test(demo.positive[0])[0:36]))
+    print(np.sum(demo.calc_hog(demo.positive[0])[0:36]))
