@@ -210,6 +210,7 @@ class HoG(object):
             print(length)
 
     def save(self):
+        pass
 
 
 if __name__ == '__main__':
