@@ -119,6 +119,15 @@ class MakeDataSet(object):
         for i in range(len(self.positive_index)):
             print(i, self.positive_index[i], file=file_ann)
 
+    def read_log(self, fn_video_index):
+        file_ann = open(self.config.crop_vAnnFile[fn_video_index], 'r')
+        count = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.positive_index = np.zeros(count, dtype=np.bool)
+        for i in range(count):
+            line = file_ann.readline()
+            self.positive_index[i] = (line.find('True') >= 0)
+            # print(i, line.find('True') >= 0)
+
     def on_change(self, emp):
         pass
 
@@ -221,6 +230,32 @@ class MakeDataSet(object):
         #    cv2.imshow('test', item)
         #    cv2.waitKey(20)
 
+    def make_data_set_by_log(self, fn_video_index):
+        self.read_log(fn_video_index)
+        self.cap = cv2.VideoCapture(self.fn_video)
+        count = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        print('count = ', count)
+        self.positive = []
+        self.negative = []
+        for i in range(count):
+            ret, self.frame = self.cap.read()
+            cutting = self.cutting(False)
+            if self.positive_index[i]:
+                self.positive.append(cutting)
+            else:
+                self.negative.append(cutting)
+            if (i+1) % 5000 == 0:
+                print(i+1, end='\t')
+            if (i+1) % 50000 == 0:
+                print(end='\n')
+
+        print('\nComplete')
+
+        for positive_item in self.positive:
+            display = cv2.resize(positive_item, dsize=None, fx=self.display_refer, fy=self.display_refer)
+            cv2.imshow(self.win_name, display)
+            cv2.waitKey(10)
+
 
 if __name__ == '__main__':
     video_index = int(input('video index: '))
@@ -231,6 +266,10 @@ if __name__ == '__main__':
         demo.store_reference()
     else:
         demo = MakeDataSet(video_index)
-        demo.make_data_set()
+
+        # demo.make_data_set()
+        # demo.output_data_set(video_index)
+        # demo.write_log(video_index)
+
+        demo.make_data_set_by_log(video_index)
         demo.output_data_set(video_index)
-        demo.write_log(video_index)
