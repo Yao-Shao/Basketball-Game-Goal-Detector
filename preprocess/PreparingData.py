@@ -19,6 +19,7 @@ class PreparingData(object):
         self.rect_height = ''
         self.win_name = 'frame'
         self.rect_flag = False
+        self.fn_video_index = fn_video_index
 
     def broadcast(self, num):
         i = num
@@ -104,6 +105,7 @@ class MakeDataSet(object):
         self.positive = []
         self.positive_index = ''
         self.display_refer = 10
+        self.fn_video_index = fn_video_index
 
     def cutting(self, is_display):
         cutting = self.frame[self.hoopPos[1]:self.hoopPos[3], self.hoopPos[0]:self.hoopPos[2]]
@@ -256,6 +258,14 @@ class MakeDataSet(object):
             cv2.imshow(self.win_name, display)
             cv2.waitKey(10)
 
+    def explore(self, npy_file):
+        crop = np.load(npy_file)
+        for image in crop:
+            display = cv2.resize(image, dsize=None, fx=self.display_refer, fy=self.display_refer)
+            cv2.imshow(self.win_name, display)
+            if cv2.waitKey(20) & 0xFF == ord('q'):
+                break
+
 
 if __name__ == '__main__':
     video_index = int(input('video index: '))
@@ -271,5 +281,8 @@ if __name__ == '__main__':
         # demo.output_data_set(video_index)
         # demo.write_log(video_index)
 
-        demo.make_data_set_by_log(video_index)
-        demo.output_data_set(video_index)
+        # demo.make_data_set_by_log(video_index)
+        # demo.output_data_set(video_index)
+
+        demo.explore(demo.config.outDirPos[demo.fn_video_index])
+        demo.explore(demo.config.outDirNeg[demo.fn_video_index])
