@@ -103,7 +103,7 @@ class MakeDataSet(object):
         self.negative = []
         self.positive = []
         self.positive_index = ''
-        self.display_refer = 10
+        self.display_refer = 5
 
     def cutting(self, is_display):
         cutting = self.frame[self.hoopPos[1]:self.hoopPos[3], self.hoopPos[0]:self.hoopPos[2]]
