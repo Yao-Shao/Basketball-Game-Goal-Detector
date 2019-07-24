@@ -262,9 +262,10 @@ class MakeDataSet(object):
         crop = np.load(npy_file)
         for image in crop:
             display = cv2.resize(image, dsize=None, fx=self.display_refer, fy=self.display_refer)
-            cv2.imshow(self.win_name, display)
+            cv2.imshow(str(npy_file), display)
             if cv2.waitKey(20) & 0xFF == ord('q'):
                 break
+        cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
