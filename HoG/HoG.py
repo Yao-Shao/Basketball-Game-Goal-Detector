@@ -6,11 +6,13 @@ from preprocess.config import *
 class HoG(object):
     def __init__(self, fn_index):
         # HoG reference
-        self.win_size = (128, 128)
+        self.win_size = (64, 64)
         self.block_size = (16, 16)
         self.block_stride = (8, 8)
         self.cell_size = (8, 8)
         self.n_bins = 9
+        self.step = 180 / self.n_bins
+        self.cell_dim = (int(self.win_size[0] / self.cell_size[0]), int(self.win_size[1] / self.cell_size[1]))
         # other
         self.gx = []
         self.gy = []
@@ -119,35 +121,59 @@ class HoG(object):
         self.angle = angle
         return gx, gy, mag, angle
 
+    def calc_cell_histogram(self, cell, angle):
+        # dispaly
+        cv2.imshow('mag', cv2.resize(self.mag, dsize=None, fx=10, fy=10))
+        cv2.imshow('cell', cv2.resize(cell, dsize=None, fx=20, fy=20))
+
+        histogram = np.zeros(self.n_bins, dtype=np.float64)
+        angle = np.array(angle).flatten()
+        angle = angle % 180
+        cell = np.array(cell).flatten()
+        for index in range(cell.shape[0]):
+            down = int(angle[index] / self.step)
+            dist_to_down = angle[index] % self.step
+            up = (down + 1) % self.n_bins
+            part_up = cell[index] * dist_to_down / self.step
+            histogram[up] = histogram[up] + part_up
+            histogram[down] = histogram[down] + cell[index] - part_up
+        print(histogram)
+        cv2.waitKey(0)
+        return histogram
+
     def calc_cells(self):
-        step = 180 / self.n_bins
-        dim = (int(self.win_size[0] / self.cell_size[0]), int(self.win_size[1] / self.cell_size[1]))
-        # print('cell dim = ', dim)
         self.cells = []
-        for x in range(dim[0]):
+        for x in range(self.cell_dim[0]):
             cell_line = []
-            for y in range(dim[1]):
-                histogram = np.zeros(self.n_bins, dtype=np.float64)
+            for y in range(self.cell_dim[1]):
                 index_x = x * self.cell_size[0]
                 index_y = y * self.cell_size[1]
+                cell_mag = self.mag[index_x:index_x + self.cell_size[0], index_y:index_y + self.cell_size[1]]
+                cell_angle = self.angle[index_x:index_x + self.cell_size[0], index_y:index_y + self.cell_size[1]]
+                cell_histogram = self.calc_cell_histogram(cell_mag, cell_angle)
+                """ CALCULATE BY FOR
+                histogram = np.zeros(self.n_bins, dtype=np.float64)
                 for i in range(self.cell_size[0]):
                     for j in range(self.cell_size[1]):
                         mag = self.mag[index_x + i, index_y + j]
                         angle = self.angle[index_x + i, index_y + j]
                         if angle >= 180:
                             angle = angle - 180
-                        angle_range_up = 0
-                        while angle_range_up * step < angle:
-                            angle_range_up = angle_range_up + 1
+                        angle_range_up = int(angle / self.step) + 1
+                        # angle_range_up = 0
+                        # while angle_range_up * step < angle:
+                        #     angle_range_up = angle_range_up + 1
                         angle_range_down = angle_range_up - 1
-                        part_down = mag * (angle_range_up * 20 - angle) / step
+                        part_down = mag * (angle_range_up * 20 - angle) / self.step
                         if angle_range_down < 0:
                             angle_range_down = self.n_bins - 1
                         if angle_range_up == self.n_bins:
                             angle_range_up = 0
                         histogram[angle_range_down] = histogram[angle_range_down] + part_down
                         histogram[angle_range_up] = histogram[angle_range_up] + mag - part_down
-                cell_line.append(histogram)
+                print(np.max(np.abs(cell_histogram - histogram)))
+                """
+                cell_line.append(cell_histogram)
             self.cells.append(cell_line)
         self.cells = np.array(self.cells)
         # print('cell shape = ', self.cells.shape)
@@ -171,7 +197,8 @@ class HoG(object):
                         block_vector.append(self.cells[index_x + i, index_y + j])
                 block_vector = np.array(block_vector)
                 block_vector = block_vector.flatten()
-                block_vector = block_vector / (block_vector.sum() + 0.000000000001)
+                normalize = np.sqrt(np.sum(block_vector ** 2))
+                block_vector = block_vector / normalize
                 img_vector.append(block_vector)
                 index_y = index_y + step_y
             index_y = 0
@@ -233,5 +260,10 @@ if __name__ == '__main__':
     video_index = int(input('video_index: '))
     demo = HoG(video_index)
     # compare
-    print(np.sum(demo.hog_test(demo.positive[0])[0:36]))
-    print(np.sum(demo.calc_hog(demo.positive[0])[0:36]))
+    cv_hog = demo.hog_test(demo.positive[0])[0:9]
+    private_hog = demo.calc_hog(demo.positive[0])[0:9]
+    # private_hog = private_hog * (np.sum(cv_hog) / np.sum(private_hog))
+    print(cv_hog)
+    print(np.sum(cv_hog))
+    print(private_hog)
+    print(np.sum(private_hog))
