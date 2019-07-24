@@ -51,7 +51,23 @@ class Configuration:
                 if line.find('crop_size') >= 0:
                     size = line.split('=')[1].strip().split(',')
                     self.cropSize = [int(i) for i in size]
-            if self.task == 'train' >= 0:
-                pass
-            if self.task == 'testROC' >= 0:
-                pass
+            if self.task == 'train':
+                if line.find("train_hog_pos") >= 0:
+                    tmp = line.split('=')[1].strip().split(',')
+                    self.trainHogPos = [path.strip() for path in tmp]
+                if line.find("train_hog_neg") >= 0:
+                    tmp = line.split('=')[1].strip().split(',')
+                    self.trainHogNeg = [path.strip() for path in tmp]
+                if line.find("train_thresholdMin") >= 0:
+                    self.thresholdMin = float(line.split('=')[1].strip())
+                if line.find("train_thresholdMax") >= 0:
+                    self.thresholdMax = float(line.split('=')[1].strip())
+                if line.find("train_thresholdStep") >= 0:
+                    self.thresholdStep = float(line.split('=')[1].strip())
+            # if self.task == 'testROC' >= 0:
+                if line.find('classify_samples_pos') >= 0:
+                    tmp = line.split('=')[1].strip().split(',')
+                    self.testHogPos = [path.strip() for path in tmp]
+                if line.find('classify_samples_neg') >= 0:
+                    tmp = line.split('=')[1].strip().split(',')
+                    self.testHogNeg = [path.strip() for path in tmp]

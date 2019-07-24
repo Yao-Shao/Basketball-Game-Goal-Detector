@@ -4,3 +4,4 @@ videos/
 .idea/
 *.npy
 *.ref
+__pycache__/
