@@ -77,7 +77,7 @@ class PreparingData(object):
                 break
 
     def store_reference(self):
-        out = open('PreparingData.ref', 'w')
+        out = open('PreparingData_'+str(self.fn_video_index)+'.ref', 'w')
         print(self.rect_x, file=out)
         print(self.rect_y, file=out)
         print(self.rect_width, file=out)
@@ -88,14 +88,15 @@ class PreparingData(object):
 class MakeDataSet(object):
     def __init__(self, fn_video_index):
         self.config = Configuration()
-        fn_refer = 'PreparingData.ref'
+        self.fn_video_index = fn_video_index
+        fn_refer = 'PreparingData_'+str(self.fn_video_index)+'.ref'
         file_refer = open(fn_refer, 'r')
         self.hoopPos = []
         self.hoopPos.append(int(file_refer.readline()))
         self.hoopPos.append(int(file_refer.readline()))
         self.hoopPos.append(self.hoopPos[0] + int(file_refer.readline()))
         self.hoopPos.append(self.hoopPos[1] + int(file_refer.readline()))
-        print(self.hoopPos)
+        # print(self.hoopPos)
         self.fn_video = self.config.crop_vFn[fn_video_index]
         self.cap = cv2.VideoCapture(self.fn_video)
         self.frame = ''
@@ -105,7 +106,6 @@ class MakeDataSet(object):
         self.positive = []
         self.positive_index = ''
         self.display_refer = 10
-        self.fn_video_index = fn_video_index
 
     def cutting(self, is_display):
         cutting = self.frame[self.hoopPos[1]:self.hoopPos[3], self.hoopPos[0]:self.hoopPos[2]]
@@ -170,11 +170,12 @@ class MakeDataSet(object):
 
             cutting = self.cutting(True)
 
-            if self.label & (self.positive_index[pos - 1] == 0):
-                self.positive_index[pos - 1] = 1
+            # if self.label & (self.positive_index[pos - 1] == 0):
+            #    self.positive_index[pos - 1] = 1
+            #    self.positive.append(cutting)
 
             # print(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
-            print('delay = ', delay, ' frame pos = ', pos - 1, ' label = ', self.positive_index[pos - 1])
+            # print('delay = ', delay, ' frame pos = ', pos - 1, ' label = ', self.positive_index[pos - 1])
 
             cv2.rectangle(self.frame, (self.hoopPos[2], self.hoopPos[3]),
                           (self.hoopPos[0], self.hoopPos[1]), (255, 0, 0), 2)
@@ -196,19 +197,14 @@ class MakeDataSet(object):
             elif key == ord('s'):
                 delay = 0
             elif key == ord('c'):
-                self.label = not self.label
+                # self.label = not self.label
+                self.positive_index[pos - 1] = not self.positive_index[pos - 1]
             elif key == ord('i'):
-                tmp = input('change position: ')
-                if not tmp.isnumeric():
-                    continue
-                next_pos = int(tmp)
-                if(next_pos < pos):
-                    for i in range(next_pos, pos):
-                        self.positive_index[i] = 0
-
-                    self.label = False
+                next_pos = int(input('change position: '))
                 self.cap.set(cv2.CAP_PROP_POS_FRAMES, next_pos)
                 cv2.setTrackbarPos('time', self.win_name, next_pos)
+
+            print('delay = ', delay, ' frame pos = ', pos - 1, ' label = ', self.positive_index[pos - 1])
 
         self.cap = cv2.VideoCapture(self.fn_video)
         index = 0
@@ -216,12 +212,11 @@ class MakeDataSet(object):
             ret, self.frame = self.cap.read()
             if not ret:
                 break
-            if self.positive_index[index] == 0:
-                cutting = self.cutting(False)
-                self.negative.append(cutting)
-            if self.positive_index[index] == 1:
-                cutting = self.cutting(False)
+            cutting = self.cutting(False)
+            if self.positive_index[index]:
                 self.positive.append(cutting)
+            else:
+                self.negative.append(cutting)
             index = index + 1
 
     def output_data_set(self, fn_index):
@@ -270,11 +265,13 @@ class MakeDataSet(object):
 
     def explore(self, npy_file):
         crop = np.load(npy_file)
+        print(crop.shape)
         for image in crop:
             display = cv2.resize(image, dsize=None, fx=self.display_refer, fy=self.display_refer)
-            cv2.imshow(self.win_name, display)
+            cv2.imshow(str(npy_file), display)
             if cv2.waitKey(20) & 0xFF == ord('q'):
                 break
+        cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
@@ -287,12 +284,12 @@ if __name__ == '__main__':
     else:
         demo = MakeDataSet(video_index)
 
-        # demo.make_data_set()
+        demo.make_data_set()
         # demo.output_data_set(video_index)
         # demo.write_log(video_index)
 
         # demo.make_data_set_by_log(video_index)
         # demo.output_data_set(video_index)
 
-        demo.explore(demo.config.outDirPos[demo.fn_video_index])
-        demo.explore(demo.config.outDirNeg[demo.fn_video_index])
+        # demo.explore(demo.config.outDirPos[demo.fn_video_index])
+        # demo.explore(demo.config.outDirNeg[demo.fn_video_index])

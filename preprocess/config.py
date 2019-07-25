@@ -24,7 +24,7 @@
 
 class Configuration:
     def __init__(self):
-        self.__filePath = "../configureOld.ini"
+        self.__filePath = "../configure.ini"
         fp_cfg = open(self.__filePath, 'r')
         self.__strConfig = fp_cfg.readlines()
         self.task = ''
