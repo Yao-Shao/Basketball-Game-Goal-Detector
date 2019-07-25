@@ -15,6 +15,9 @@ class HoG(object):
         self.cell_dim = (int(self.win_size[0] / self.cell_size[0]), int(self.win_size[1] / self.cell_size[1]))
         self.block_dim = (int((self.win_size[0] - self.block_size[0]) / self.block_stride[0] + 1),
                           int((self.win_size[1] - self.block_size[1]) / self.block_stride[1] + 1))
+        self.contain_x = int(self.block_size[0] / self.cell_size[0])
+        self.contain_y = int(self.block_size[1] / self.cell_size[1])
+        self.vector_length = self.block_dim[0] * self.block_dim[1] * self.contain_x * self.contain_y * self.n_bins
         # other
         self.gx = []
         self.gy = []
@@ -41,7 +44,7 @@ class HoG(object):
             self.positive.append(tmp)
 
         tmp_negative = np.load(fn_negative)
-        print('origin negative data set: ', tmp_positive.shape)
+        print('origin negative data set: ', tmp_negative.shape)
         self.negative = []
         for item in tmp_negative:
             tmp = cv2.resize(item, self.win_size)
@@ -155,7 +158,7 @@ class HoG(object):
                 cell_angle = self.angle[index_x:index_x + self.cell_size[0], index_y:index_y + self.cell_size[1]]
                 cell_histogram = self.calc_cell_histogram(cell_mag, cell_angle)
                 """ CALCULATE BY FOR
-                histogram = np.zeros(self.n_bins, dtype=np.float64)
+                histogram = np.zeros(self.n_bins, dtype=np.float32)
                 for i in range(self.cell_size[0]):
                     for j in range(self.cell_size[1]):
                         mag = self.mag[index_x + i, index_y + j]
@@ -186,14 +189,13 @@ class HoG(object):
         # print('block dim = ', block_dim)
         step_x = int(self.block_stride[0] / self.cell_size[0])
         step_y = int(self.block_stride[1] / self.cell_size[1])
-        contain_x = int(self.block_size[0] / self.cell_size[0])
-        contain_y = int(self.block_size[1] / self.cell_size[1])
+
         index_x = 0
         index_y = 0
         img_vector = []
         for x in range(self.block_dim[0]):
             for y in range(self.block_dim[1]):
-                block_vector = self.cells[index_x:index_x+contain_x, index_y:index_y+contain_y]
+                block_vector = self.cells[index_x:index_x+self.contain_x, index_y:index_y+self.contain_y]
                 """ get vector by for
                 block_vector = []
                 for i in range(contain_x):
@@ -210,7 +212,7 @@ class HoG(object):
             index_x = index_x + step_x
         img_vector = np.array(img_vector)
         img_vector = img_vector.flatten()
-
+        img_vector = img_vector.astype(np.float32)
         # self.hog_data_set.append(img_vector)
         # print('vector shape: ', img_vector.shape)
         return img_vector
@@ -230,12 +232,12 @@ class HoG(object):
         np.save(out_negative, self.hog_negative)
 
     def hog_on_data_set(self):
-        self.hog_positive = []
+        self.hog_positive = np.zeros((len(self.positive), self.vector_length), dtype=np.float32)
         index = 0
         print('HoG on positive data set...')
         for img in self.positive:
             img_vector = self.calc_hog(img)
-            self.hog_positive.append(img_vector)
+            self.hog_positive[index] = img_vector
             index = index + 1
             if index % 200 == 0:
                 print(index, end=' ')
@@ -244,13 +246,14 @@ class HoG(object):
         self.hog_positive = np.array(self.hog_positive)
         if self.hog_positive.shape[0] % 200 != 0:
             print('\nComplete: ', self.hog_positive.shape)
-        self.hog_negative = []
+
+        self.hog_negative = np.zeros((len(self.negative), self.vector_length), dtype=np.float32)
         index = 0
         print('HoG on negative data set...')
         for img in self.negative:
             img_vector = self.calc_hog(img)
             # print(img_vector.shape)
-            self.hog_negative.append(img_vector)
+            self.hog_negative[index] = img_vector
             index = index + 1
             if index % 200 == 0:
                 print(index, end=' ')
