@@ -3,16 +3,18 @@ import preprocess.config as config
 import matplotlib.pyplot as plt
 
 class Classifier:
-    def __init__(self, files):
-        self.__threshold = config.thresholdMin
-        sum = np.zeros(np.load(files[0])[0].shape, dtype = np.float)
+    def __init__(self, cfg):
+        self.__config = cfg
+        files = self.__config.trainSamplesNeg # neg as center
+        self.__threshold = self.__config.thresholdMin
+        mySum = np.zeros(np.load(files[0])[0].shape, dtype = np.float)
         cnt = 0
         for file in files:
             samples = np.load(file)
             for item in samples:
-                sum += item
+                mySum += item
             cnt += len(samples)
-        self.__centerOfSamples = sum / cnt
+        self.__centerOfSamples = mySum / cnt
 
         # print("center:{}".format(self.__centerOfSamples))
 
@@ -33,10 +35,11 @@ class Classifier:
         return self.__threshold
 
 class TestROC:
-    def __init__(self, clf):
+    def __init__(self, clf, cfg):
         self.__classifier = clf
-        self.__testPos = config.testHogPos
-        self.__testNeg = config.testHogNeg
+        self.__config = cfg
+        self.__testPos = self.__config.testSamplesPos
+        self.__testNeg = self.__config.testSamplesNeg
         self.__truePos = 0
         self.__falsePos = 0
         self.__trueNeg = 0
@@ -82,25 +85,27 @@ class TestROC:
 
     def draw(self):
         # compute data
-        while self.__classifier.getThreshold() < config.thresholdMax:
+        while self.__classifier.getThreshold() < self.__config.thresholdMax:
             self.testNegCenter(self.__testPos, True)
             self.testNegCenter(self.__testNeg, False)
             self.__calculate()
-            self.__rec.append(self.recall)
+            self.printEval()
+            self.__rec.append(100 - self.recall)
             self.__far.append(self.falseAlarmRate)
-            self.__classifier.setThreshold(self.__classifier.getThreshold() + config.thresholdStep)
+            self.__classifier.setThreshold(self.__classifier.getThreshold() + self.__config.thresholdStep)
         # plot ROC graph
-        print(self.__far)
-        print(self.__rec)
+        # print(self.__far)
+        # print(self.__rec)
         plt.plot(self.__far, self.__rec)
         plt.title('ROC Curve')
         plt.xlabel('False Alarm Rate')
         plt.ylabel('Missed Positive Number')
-        plt.axis([0,0.5,0,25])
+        # plt.axis([0,100,0,100])
         plt.grid(True)
         plt.show()
 
     def printEval(self):
+        print("Threshold = {:.2f}".format(self.__classifier.getThreshold()))
         print("True Positive = {:}".format(self.__truePos))
         print("False Negtive = {:}".format(self.__falseNeg))
         print("True Negtive = {:}".format(self.__trueNeg))
@@ -111,6 +116,7 @@ class TestROC:
         print("Precision = {:.2f}%".format(self.precision))
         print("Recall = {:.2f}%".format(self.recall))
         print("False alarm rate = {:.2f}%".format(self.falseAlarmRate))
+        print()
 
 
     def __calculate(self):
@@ -123,18 +129,11 @@ class TestROC:
 if __name__ == '__main__':
     cfg = config.Configuration()
     if cfg.task == 'train':
+
         ########## train the classifier ############
-        ###### pos as center
-
-        # trainPos = np.load(config.trainHogPos[index])
-        # classifier = Classifier(trainPos)
-
         ###### neg as center
-        classifier = Classifier(cfg.trainHogNeg)
+        classifier = Classifier(cfg)
 
-        # test
-        myTest = TestROC(classifier)
-        # myTest.testNegCenter(config.testHogPos, True)
-        # myTest.testNegCenter(config.testHogNeg, False)
-        # myTest.printEval()
+        ########## test ############################
+        myTest = TestROC(classifier, cfg)
         myTest.draw()
