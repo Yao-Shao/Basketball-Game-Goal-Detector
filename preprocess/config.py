@@ -83,3 +83,8 @@ class Configuration:
                 if line.find('classify_samples_neg') >= 0:
                     tmp = line.split('=')[1].strip().split(',')
                     self.testSamplesNeg = [path.strip() for path in tmp]
+                if line.find('classify_save_path') >= 0:
+                    self.testSavePath = line.split('=')[1].strip()
+                if line.find('classify_load_path') >= 0:
+                    tmp = line.split('=')[1].strip().split(',')
+                    self.testLoadPath = [path.strip() for path in tmp]

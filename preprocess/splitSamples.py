@@ -12,36 +12,35 @@ outTestPos = cfg.testSamplesPos
 outTestNeg = cfg.testSamplesNeg
 
 print("Running...")
+
+partition = 7
 index = 0
+
 for file in posFiles:
     pos = np.load(file)
     trainPos = []
     testPos = []
-    cnt = 0
     for i in pos:
-        if cnt < len(pos) * 0.7:
+        if random.randint(0, 9) < partition:
             trainPos.append(i)
         else:
             testPos.append(i)
-        cnt += 1
     np.save(outTrainPos[index], trainPos)
     np.save(outTestPos[index], testPos)
     index += 1
 
-print("Process:50%")
 index = 0
 for file in negFiles:
     neg = np.load(file)
     trainNeg = []
     testNeg = []
-    cnt = 0
     for i in neg:
-        if cnt < len(neg) * 0.7:
+        if random.randint(0, 9) < partition:
             trainNeg.append(i)
         else:
             testNeg.append(i)
-        cnt += 1
     np.save(outTrainNeg[index], trainNeg)
     np.save(outTestNeg[index], testNeg)
+    index += 1
 
 print("Success")

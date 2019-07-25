@@ -1,6 +1,7 @@
 import numpy as np
 import preprocess.config as config
 import matplotlib.pyplot as plt
+import math
 
 class Classifier:
     def __init__(self, cfg):
@@ -86,12 +87,35 @@ class TestROC:
                         self.__falseNeg += 1
 
     def draw(self):
+        lineStyle = ['r*-', 'bo-', 'y^-', 'g+--', 'kx-.', 'cs-']
+        # load data
+        inputFiles = self.__config.testLoadPath
+        cnt = 0
+        for filePath in inputFiles:
+            file = open(filePath, 'r')
+            self.__rec = eval(file.readline())
+            self.__far = eval(file.readline())
+            plt.plot(self.__far, self.__rec, lineStyle[cnt % len(lineStyle)], label = filePath.split('/')[-1][:-4])
+            cnt += 1
+        # plot ROC graph
+        # print(self.__far)
+        # print(self.__rec)
+
+        plt.title('ROC Curve')
+        plt.xlabel('False Alarm Rate')
+        plt.ylabel('Missed Positive Number')
+        # plt.axis([0,100,0,100])
+        plt.grid(True)
+        plt.legend(loc = 'upper right')
+        plt.show()
+
+    def compute(self):
         # compute data
         while self.__classifier.getThreshold() < self.__config.thresholdMax:
             self.testNegCenter(self.__testPos, True)
             self.testNegCenter(self.__testNeg, False)
             self.__calculate()
-            # self.printEval()
+            self.printEval()
             self.__rec.append(100 - self.recall)
             self.__far.append(self.falseAlarmRate)
             self.__classifier.setThreshold(self.__classifier.getThreshold() + self.__config.thresholdStep)
@@ -99,16 +123,10 @@ class TestROC:
             self.__falsePos = 0
             self.__trueNeg = 0
             self.__falseNeg = 0
-        # plot ROC graph
-        # print(self.__far)
-        # print(self.__rec)
-        plt.plot(self.__far, self.__rec)
-        plt.title('ROC Curve')
-        plt.xlabel('False Alarm Rate')
-        plt.ylabel('Missed Positive Number')
-        # plt.axis([0,100,0,100])
-        plt.grid(True)
-        plt.show()
+        outFile = open(self.__config.testSavePath, "w")
+        outFile.write(str(self.__rec))
+        outFile.write("\n")
+        outFile.write(str(self.__far))
 
     def printEval(self):
         print("Threshold = {:.2f}".format(self.__classifier.getThreshold()))
@@ -142,4 +160,5 @@ if __name__ == '__main__':
 
         ########## test ############################
         myTest = TestROC(classifier, cfg)
+        # myTest.compute()
         myTest.draw()
