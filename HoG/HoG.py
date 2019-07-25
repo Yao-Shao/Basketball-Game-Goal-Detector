@@ -31,6 +31,16 @@ class HoG(object):
         self.hog_positive = []
         self.hog_negative = []
         self.cells = np.array([])
+        # hog version
+        self.display_win = (128, 128)
+        self.max_length = 64
+        self.centre = (64, 64)
+        self.max_histogram = 64
+        self.scale = 20
+        self.color = 200
+        self.thickness = 2
+        self.line_type = cv2.LINE_AA
+        self.win_scale = 4
 
     def load_data_set(self):
         print('Loading data set...')
@@ -61,8 +71,9 @@ class HoG(object):
         l2_hys_threshold = 2.0000000000000001e-01
         gamma_correction = 0
         nlevels = 128
-        hog = cv2.HOGDescriptor(self.win_size, self.block_size, self.block_stride, self.cell_size, self.n_bins, deriv_aperture, win_sigma,
-                                histogram_norm_type, l2_hys_threshold, gamma_correction, nlevels)
+        hog = cv2.HOGDescriptor(self.win_size, self.block_size, self.block_stride, self.cell_size, self.n_bins,
+                                deriv_aperture, win_sigma, histogram_norm_type, l2_hys_threshold, gamma_correction,
+                                nlevels)
 
         descriptor = hog.compute(img)
         if descriptor is None:
@@ -101,6 +112,21 @@ class HoG(object):
         '''
         return descriptor
 
+    def cell_display(self, histogram):
+        # histogram = [0, 0.11498562, 1.22206272, 2.40582829, 3.52780329, 0.64459814, 0.01769177, 0, 0]
+        # histogram = [6, 6, 6, 6, 6, 6, 6, 6, 6]
+        cell = np.zeros(self.display_win, np.uint8)
+        for index in range(self.n_bins):
+            angle = index * 20 * np.pi / 180
+            length = self.max_length * (histogram[index] / self.max_histogram) * self.scale
+            pt_start = (int(self.centre[0] - length * np.cos(angle)), int(self.centre[1] + length * np.sin(angle)))
+            pt_end = (int(self.centre[0] + length * np.cos(angle)), int(self.centre[1] - length * np.sin(angle)))
+            cv2.line(cell, pt_start, pt_end, self.color, self.thickness, self.line_type)
+        cell = cv2.resize(cell, dsize=(self.cell_size[0] * self.win_scale, self.cell_size[1] * self.win_scale))
+        # cv2.imshow('cell_test', cell)
+        # cv2.waitKey(0)
+        return cell
+
     def calc_gradient(self, img):
         # img = self.positive[0]
         img = np.float64(img) / 255.0
@@ -128,7 +154,8 @@ class HoG(object):
 
     def calc_cell_histogram(self, cell, angle):
         # dispaly
-        # cv2.imshow('mag', cv2.resize(self.mag, dsize=None, fx=10, fy=10))
+        # print(cell)
+        # cv2.imshow('mag', cv2.resize(self.mag, dsize=None, fx=4, fy=4))
         # cv2.imshow('cell', cv2.resize(cell, dsize=None, fx=20, fy=20))
         # cv2.waitKey(0)
 
@@ -149,6 +176,7 @@ class HoG(object):
 
     def calc_cells(self):
         self.cells = []
+        hog_display = np.zeros((self.win_size[0] * self.win_scale, self.win_size[1] * self.win_scale), dtype=np.uint8)
         for x in range(self.cell_dim[0]):
             cell_line = []
             for y in range(self.cell_dim[1]):
@@ -157,31 +185,24 @@ class HoG(object):
                 cell_mag = self.mag[index_x:index_x + self.cell_size[0], index_y:index_y + self.cell_size[1]]
                 cell_angle = self.angle[index_x:index_x + self.cell_size[0], index_y:index_y + self.cell_size[1]]
                 cell_histogram = self.calc_cell_histogram(cell_mag, cell_angle)
-                """ CALCULATE BY FOR
-                histogram = np.zeros(self.n_bins, dtype=np.float32)
-                for i in range(self.cell_size[0]):
-                    for j in range(self.cell_size[1]):
-                        mag = self.mag[index_x + i, index_y + j]
-                        angle = self.angle[index_x + i, index_y + j]
-                        if angle >= 180:
-                            angle = angle - 180
-                        angle_range_up = int(angle / self.step) + 1
-                        # angle_range_up = 0
-                        # while angle_range_up * step < angle:
-                        #     angle_range_up = angle_range_up + 1
-                        angle_range_down = angle_range_up - 1
-                        part_down = mag * (angle_range_up * 20 - angle) / self.step
-                        if angle_range_down < 0:
-                            angle_range_down = self.n_bins - 1
-                        if angle_range_up == self.n_bins:
-                            angle_range_up = 0
-                        histogram[angle_range_down] = histogram[angle_range_down] + part_down
-                        histogram[angle_range_up] = histogram[angle_range_up] + mag - part_down
-                print(np.max(np.abs(cell_histogram - histogram)))
-                """
+
+                # display hog
+                from_x = index_x * self.win_scale
+                to_x = (index_x + self.cell_size[0]) * self.win_scale
+                from_y = index_y * self.win_scale
+                to_y = (index_y + self.cell_size[1]) * self.win_scale
+                hog_display[from_x:to_x, from_y:to_y] = self.cell_display(cell_histogram)
+
                 cell_line.append(cell_histogram)
             self.cells.append(cell_line)
         self.cells = np.array(self.cells)
+
+        # display hog
+        mag_display = cv2.resize(self.mag, dsize=None, fx=self.win_scale, fy=self.win_scale)
+        # hog_display = cv2.resize(hog_display, dsize=None, fx=self.win_scale, fy=self.win_scale)
+        cv2.imshow('mag', mag_display)
+        cv2.imshow('hog', hog_display)
+        cv2.waitKey(0)
         # print('cell shape = ', self.cells.shape)
 
     def block_normalize(self):
