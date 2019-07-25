@@ -35,7 +35,7 @@ class Configuration:
             line = line.strip()
             if line.find('gl_task') >= 0:
                 self.task = line.split('=')[1].strip()
-            if self.task == 'crop':
+            if self.task == 'train':
                 if line.find('crop_fn_video') >= 0:
                     tmp = line.split('=')[1].strip().split(',')
                     self.crop_vFn = [name.strip() for name in tmp]
@@ -51,7 +51,7 @@ class Configuration:
                 if line.find('crop_size') >= 0:
                     size = line.split('=')[1].strip().split(',')
                     self.cropSize = [int(i) for i in size]
-            if self.task == 'train':
+            # if self.task == 'train':
                 if line.find('train_fn_pos') >= 0:
                     tmp = line.split('=')[1].strip().split(',')
                     self.trainFnPos = [path.strip() for path in tmp]

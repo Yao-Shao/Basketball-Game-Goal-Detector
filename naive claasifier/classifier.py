@@ -1,7 +1,6 @@
 import numpy as np
-import preprocess.config as config
 import matplotlib.pyplot as plt
-import math
+import preprocess.config as config
 
 class Classifier:
     def __init__(self, cfg):
@@ -35,9 +34,9 @@ class Classifier:
     def getThreshold(self):
         return self.__threshold
 
+
 class TestROC:
-    def __init__(self, clf, cfg):
-        self.__classifier = clf
+    def __init__(self, cfg):
         self.__config = cfg
         self.__testPos = self.__config.testSamplesPos
         self.__testNeg = self.__config.testSamplesNeg
@@ -48,7 +47,10 @@ class TestROC:
         self.__rec = [] # recall
         self.__far = [] # false alarm rate
 
-    def testPosCenter(self, filePath, label):
+    def setClassifier(self, clf):
+        self.__classifier = clf
+
+    def __testPosCenter(self, filePath, label):
         for file in filePath:
             data = np.load(file)
             # print("data num = {}".format(len(data)))
@@ -67,7 +69,7 @@ class TestROC:
                     else:
                         self.__trueNeg += 1
 
-    def testNegCenter(self, filePath, label):
+    def __testNegCenter(self, filePath, label):
         for file in filePath:
             data = np.load(file)
             # print("data num = {}".format(len(data)))
@@ -86,34 +88,17 @@ class TestROC:
                     else:
                         self.__falseNeg += 1
 
-    def draw(self):
-        lineStyle = ['r*-', 'bo-', 'y^-', 'g+--', 'kx-.', 'cs-']
-        # load data
-        inputFiles = self.__config.testLoadPath
-        cnt = 0
-        for filePath in inputFiles:
-            file = open(filePath, 'r')
-            self.__rec = eval(file.readline())
-            self.__far = eval(file.readline())
-            plt.plot(self.__far, self.__rec, lineStyle[cnt % len(lineStyle)], label = filePath.split('/')[-1][:-4])
-            cnt += 1
-        # plot ROC graph
-        # print(self.__far)
-        # print(self.__rec)
-
-        plt.title('ROC Curve')
-        plt.xlabel('False Alarm Rate')
-        plt.ylabel('Missed Positive Number')
-        # plt.axis([0,100,0,100])
-        plt.grid(True)
-        plt.legend(loc = 'upper right')
-        plt.show()
+    def __calculate(self):
+        self.accuracy = (self.__truePos + self.__trueNeg)/(self.__truePos+self.__trueNeg+self.__falseNeg+self.__falsePos) * 100
+        self.precision = self.__truePos / (self.__truePos + self.__falsePos) * 100
+        self.recall = self.__truePos / (self.__truePos + self.__falseNeg) * 100
+        self.falseAlarmRate = self.__falsePos / (self.__falsePos + self.__trueNeg) * 100
 
     def compute(self):
         # compute data
         while self.__classifier.getThreshold() < self.__config.thresholdMax:
-            self.testNegCenter(self.__testPos, True)
-            self.testNegCenter(self.__testNeg, False)
+            self.__testNegCenter(self.__testPos, True)
+            self.__testNegCenter(self.__testNeg, False)
             self.__calculate()
             self.printEval()
             self.__rec.append(100 - self.recall)
@@ -127,6 +112,26 @@ class TestROC:
         outFile.write(str(self.__rec))
         outFile.write("\n")
         outFile.write(str(self.__far))
+
+    def draw(self):
+        lineStyle = ['r*-', 'bo-', 'y^-', 'g+--', 'kx-.', 'cs-']
+        # load data
+        inputFiles = self.__config.testLoadPath
+        cnt = 0
+        for filePath in inputFiles:
+            file = open(filePath, 'r')
+            self.__rec = eval(file.readline())
+            self.__far = eval(file.readline())
+            plt.plot(self.__far, self.__rec, lineStyle[cnt % len(lineStyle)], label = filePath.split('/')[-1][:-4])
+            cnt += 1
+        # plot ROC graph
+        plt.title('ROC - effect of cell size')
+        plt.xlabel('False Alarm Rate')
+        plt.ylabel('Missed Positive Number')
+        plt.axis([0, 100, 0, 100])
+        plt.grid(True)
+        plt.legend(loc = 'upper right')
+        plt.show()
 
     def printEval(self):
         print("Threshold = {:.2f}".format(self.__classifier.getThreshold()))
@@ -143,11 +148,7 @@ class TestROC:
         print()
 
 
-    def __calculate(self):
-        self.accuracy = (self.__truePos + self.__trueNeg)/(self.__truePos+self.__trueNeg+self.__falseNeg+self.__falsePos) * 100
-        self.precision = self.__truePos / (self.__truePos + self.__falsePos) * 100
-        self.recall = self.__truePos / (self.__truePos + self.__falseNeg) * 100
-        self.falseAlarmRate = self.__falsePos / (self.__falsePos + self.__trueNeg) * 100
+
 
 
 if __name__ == '__main__':
@@ -158,7 +159,8 @@ if __name__ == '__main__':
         ###### neg as center
         classifier = Classifier(cfg)
 
-        ########## test ############################
-        myTest = TestROC(classifier, cfg)
-        # myTest.compute()
+        ########## testROC ############################
+        myTest = TestROC(cfg)
+        myTest.setClassifier(classifier)
+        myTest.compute()
         myTest.draw()
