@@ -125,7 +125,7 @@ class TestROC:
             plt.plot(self.__far, self.__rec, lineStyle[cnt % len(lineStyle)], label = filePath.split('/')[-1][:-4])
             cnt += 1
         # plot ROC graph
-        plt.title('ROC - effect of cell size')
+        plt.title('ROC - effect of number of bins')
         plt.xlabel('False Alarm Rate')
         plt.ylabel('Missed Positive Number')
         plt.axis([0, 100, 0, 100])
