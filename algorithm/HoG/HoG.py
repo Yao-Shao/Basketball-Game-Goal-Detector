@@ -6,11 +6,11 @@ from preprocess.config import *
 class HoG(object):
     def __init__(self, fn_index):
         # HoG reference
-        self.win_size = (128, 128)
+        self.win_size = (64, 64)
         self.block_size = (16, 16)
         self.block_stride = (8, 8)
         self.cell_size = (8, 8)
-        self.n_bins = 9
+        self.n_bins = 12
         self.step = 180 / self.n_bins
         self.cell_dim = (int(self.win_size[0] / self.cell_size[0]), int(self.win_size[1] / self.cell_size[1]))
         self.block_dim = (int((self.win_size[0] - self.block_size[0]) / self.block_stride[0] + 1),
@@ -36,9 +36,9 @@ class HoG(object):
         self.max_length = 64
         self.centre = (64, 64)
         self.max_histogram = 64
-        self.scale = 20
+        self.scale = 16
         self.color = 200
-        self.thickness = 2
+        self.thickness = 3
         self.line_type = cv2.LINE_AA
         self.win_scale = 4
 
@@ -50,14 +50,14 @@ class HoG(object):
         print('origin positive data set: ', tmp_positive.shape)
         self.positive = []
         for item in tmp_positive:
-            tmp = cv2.resize(item, self.win_size)
+            tmp = cv2.resize(item, (self.win_size[1], self.win_size[0]))
             self.positive.append(tmp)
 
         tmp_negative = np.load(fn_negative)
         print('origin negative data set: ', tmp_negative.shape)
         self.negative = []
         for item in tmp_negative:
-            tmp = cv2.resize(item, self.win_size)
+            tmp = cv2.resize(item, (self.win_size[1], self.win_size[0]))
             self.negative.append(tmp)
 
         print('positive set: ', len(self.positive), self.positive[0].shape)
@@ -176,7 +176,10 @@ class HoG(object):
 
     def calc_cells(self):
         self.cells = []
-        hog_display = np.zeros((self.win_size[0] * self.win_scale, self.win_size[1] * self.win_scale), dtype=np.uint8)
+
+        # display hog
+        # hog_display = np.zeros((self.win_size[0] * self.win_scale, self.win_size[1] * self.win_scale), dtype=np.uint8)
+
         for x in range(self.cell_dim[0]):
             cell_line = []
             for y in range(self.cell_dim[1]):
@@ -185,25 +188,25 @@ class HoG(object):
                 cell_mag = self.mag[index_x:index_x + self.cell_size[0], index_y:index_y + self.cell_size[1]]
                 cell_angle = self.angle[index_x:index_x + self.cell_size[0], index_y:index_y + self.cell_size[1]]
                 cell_histogram = self.calc_cell_histogram(cell_mag, cell_angle)
-
+                '''
                 # display hog
                 from_x = index_x * self.win_scale
                 to_x = (index_x + self.cell_size[0]) * self.win_scale
                 from_y = index_y * self.win_scale
                 to_y = (index_y + self.cell_size[1]) * self.win_scale
                 hog_display[from_x:to_x, from_y:to_y] = self.cell_display(cell_histogram)
-
+                '''
                 cell_line.append(cell_histogram)
             self.cells.append(cell_line)
         self.cells = np.array(self.cells)
-
+        '''
         # display hog
         mag_display = cv2.resize(self.mag, dsize=None, fx=self.win_scale, fy=self.win_scale)
         # hog_display = cv2.resize(hog_display, dsize=None, fx=self.win_scale, fy=self.win_scale)
         cv2.imshow('mag', mag_display)
         cv2.imshow('hog', hog_display)
         cv2.waitKey(0)
-        # print('cell shape = ', self.cells.shape)
+        '''
 
     def block_normalize(self):
 
@@ -217,12 +220,6 @@ class HoG(object):
         for x in range(self.block_dim[0]):
             for y in range(self.block_dim[1]):
                 block_vector = self.cells[index_x:index_x+self.contain_x, index_y:index_y+self.contain_y]
-                """ get vector by for
-                block_vector = []
-                for i in range(contain_x):
-                    for j in range(contain_y):
-                        block_vector.append(self.cells[index_x + i, index_y + j])      
-                """
                 block_vector = np.array(block_vector)
                 block_vector = block_vector.flatten()
                 normalize = np.sqrt(np.sum(block_vector ** 2))
