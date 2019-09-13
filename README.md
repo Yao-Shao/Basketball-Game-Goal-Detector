@@ -23,7 +23,7 @@ Label, cut, and randomly shuffle the frames. See details in [preprocess](https:/
 
 ### Feature extraction
 
-For naive classifier, LR, SVM, we use [HoG](https://dl.acm.org/citation.cfm?id=1069007)to extract features.
+For naive classifier, LR, SVM, we use [HoG](https://dl.acm.org/citation.cfm?id=1069007) to extract features.
 
 ### Evaluation
 
