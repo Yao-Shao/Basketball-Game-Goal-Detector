@@ -19,11 +19,11 @@ Basically, we label each frame as goal(1) or not goal(0). A frame is labeled as 
 
 ### Preprocess
 
-Label, cut, and randomly shuffle the frames. See details in [preprocess]().
+Label, cut, and randomly shuffle the frames. See details in [preprocess](https://github.com/Yao-Shao/Basketball-Game-Goal-Detector/blob/master/preprocess/PrepareData.py).
 
 ### Feature extraction
 
-For naive classifier, LR, SVM, we use [HoG](https://dl.acm.org/citation.cfm?id=1069007 ) (<https://dl.acm.org/citation.cfm?id=1069007> )to extract features.
+For naive classifier, LR, SVM, we use [HoG](https://dl.acm.org/citation.cfm?id=1069007)to extract features.
 
 ### Evaluation
 
