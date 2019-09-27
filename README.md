@@ -15,7 +15,7 @@ Our dataset is four basketball videos containing about 400, 000 frames.
 
 ### Annotation
 
-Basically, we label each frame as goal(1) or not goal(0). A frame is labeled as goal if the bottom of the basketball is below the loop and the top of the ball is in the nets. 
+Basically, we label each frame as goal(1) or not goal(0). A frame is labeled as goal if from the time when the bottom of the basketball touches the loop to the time when the top of the ball is leaving the nets. 
 
 ### Preprocess
 
