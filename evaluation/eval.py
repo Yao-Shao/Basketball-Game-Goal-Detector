@@ -103,5 +103,5 @@ if __name__ == '__main__':
     # evaluation.draw()
     #
     eng = pyttsx3.init()
-    eng.say("Huh, niu dong mei is pig")
+    eng.say("Work done!")
     eng.runAndWait()
